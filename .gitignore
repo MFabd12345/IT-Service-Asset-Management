@@ -2,3 +2,8 @@
 bin/
 obj
 *.user
+*.suo
+
+backend/ITServiceManagement.API/appsettings.json
+backend/ITServiceManagement.API/appsettings.*.json
+!backend/ITServiceManagement.API/appsettings.example.json
