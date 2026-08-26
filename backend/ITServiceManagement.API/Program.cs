@@ -61,4 +61,28 @@ app.MapPost("/api/assets", (Asset asset, AssetService assetService) =>
     return asset;
 });
 
+app.MapDelete("/api/assets/{id}", (int id, AssetService assetService) =>
+{
+    var deleted = assetService.DeleteAsset(id);
+
+    if (!deleted)
+    {
+        return Results.NotFound("Asset not found");
+    }
+
+    return Results.Ok("Asset deleted successfully");
+});
+
+app.MapPut("/api/assets/{id}", (int id, Asset updatedAsset, AssetService assetService) =>
+{
+    var updated = assetService.UpdateAsset(id, updatedAsset);
+
+    if (!updated)
+    {
+        return Results.NotFound("Asset not found");
+    }
+
+    return Results.Ok("Asset updated successfully");
+});
+
 app.Run();

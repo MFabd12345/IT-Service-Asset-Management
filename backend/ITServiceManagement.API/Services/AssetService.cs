@@ -27,4 +27,37 @@ public class AssetService
         _db.Assets.Add(asset);
         _db.SaveChanges();
     }
+
+    public bool DeleteAsset(int id)
+    {
+        var asset = _db.Assets.Find(id);
+
+        if (asset == null)
+        {
+            return false;
+        }
+
+        _db.Assets.Remove(asset);
+        _db.SaveChanges();
+
+        return true;
+    }
+
+    public bool UpdateAsset(int id, Asset updatedAsset)
+    {
+        var asset = _db.Assets.Find(id);
+
+        if (asset == null)
+        {
+            return false;
+        }
+
+        asset.Name = updatedAsset.Name;
+        asset.Type = updatedAsset.Type;
+        asset.Status = updatedAsset.Status;
+
+        _db.SaveChanges();
+
+        return true;
+    }
 }
