@@ -2,6 +2,7 @@ using ITServiceManagement.API.Data;
 using ITServiceManagement.API.Models;
 using ITServiceManagement.API.Services;
 using Microsoft.EntityFrameworkCore;
+using ITServiceManagement.API.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<AssetService>();
 builder.Services.AddSwaggerGen();
+builder.Services.AddValidation();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseMySql(
@@ -55,10 +57,17 @@ app.MapGet("/api/assets/{id}", (int id, AssetService assetService) =>
     return Results.Ok (asset);
 });
 
-app.MapPost("/api/assets", (Asset asset, AssetService assetService) =>
+app.MapPost("/api/assets", (CreateAssetDto assetDto, AssetService assetService) =>
 {
+    var asset = new Asset
+    {
+        Name = assetDto.Name,
+        Type = assetDto.Type,
+        Status = assetDto.Status
+    };
+
     assetService.AddAsset(asset);
-    return asset;
+    return Results.Created($"/api/assets/{asset.Id}", asset);
 });
 
 app.MapDelete("/api/assets/{id}", (int id, AssetService assetService) =>
