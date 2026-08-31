@@ -3,8 +3,16 @@ using ITServiceManagement.API.Models;
 using ITServiceManagement.API.Services;
 using Microsoft.EntityFrameworkCore;
 using ITServiceManagement.API.DTOs;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.Converters.Add(
+        new JsonStringEnumConverter()
+    );
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -42,7 +50,17 @@ app.MapGet("/", () =>
 
 app.MapGet("/api/assets", (AssetService assetService) =>
 {
-    return assetService.GetAssets();
+    var assets = assetService.GetAssets();
+
+    var assetDtos = assets.Select(asset => new AssetDto
+    {
+        Id = asset.Id,
+        Name = asset.Name,
+        Type = asset.Type,
+        Status = asset.Status
+    });
+
+    return Results.Ok(assetDtos);
 });
 
 app.MapGet("/api/assets/{id}", (int id, AssetService assetService) =>

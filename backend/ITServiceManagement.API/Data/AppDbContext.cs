@@ -11,4 +11,11 @@ public class AppDbContext : DbContext
     }
 
     public DbSet<Asset> Assets { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Asset>()
+            .Property(a => a.Status)
+            .HasConversion<string>();
+    }
 }
