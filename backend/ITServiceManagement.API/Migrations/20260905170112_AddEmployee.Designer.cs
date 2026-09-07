@@ -3,6 +3,7 @@ using ITServiceManagement.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ITServiceManagement.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260905170112_AddEmployee")]
+    partial class AddEmployee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,9 +32,6 @@ namespace ITServiceManagement.API.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("EmployeeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -45,8 +45,6 @@ namespace ITServiceManagement.API.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("EmployeeId");
 
                     b.ToTable("Assets");
                 });
@@ -82,15 +80,6 @@ namespace ITServiceManagement.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Employees");
-                });
-
-            modelBuilder.Entity("ITServiceManagement.API.Models.Asset", b =>
-                {
-                    b.HasOne("ITServiceManagement.API.Models.Employee", "Employee")
-                        .WithMany()
-                        .HasForeignKey("EmployeeId");
-
-                    b.Navigation("Employee");
                 });
 #pragma warning restore 612, 618
         }
