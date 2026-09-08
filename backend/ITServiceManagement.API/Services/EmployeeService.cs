@@ -34,19 +34,27 @@ public class EmployeeService
         _db.SaveChanges();
     }
 
-    public bool DeleteEmployee(int id)
+    public (bool Success, string? Error) DeleteEmployee(int id)
     {
         var employee = _db.Employees.Find(id);
 
         if (employee == null)
         {
-            return false;
+            return (false, "Employee not found");
+        }
+
+        var hasAssignedAssets = _db.Assets
+            .Any(a => a.EmployeeId == id);
+
+        if (hasAssignedAssets)
+        {
+            return (false, "Employee has assets assigned and cannot be deleted");
         }
 
         _db.Employees.Remove(employee);
         _db.SaveChanges();
 
-        return true;
+        return (true, null);
     }
 
     public bool UpdateEmployee(int id, Employee updatedEmployee)
