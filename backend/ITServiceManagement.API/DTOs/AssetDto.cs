@@ -11,4 +11,20 @@ public class AssetDto
     public string Type { get; set; } = string.Empty;
 
     public AssetStatus Status { get; set; }
+
+    public string SerialNumber { get; set; } = string.Empty;
+
+    public string AssetTag { get; set; } = string.Empty;
+
+    public string Manufacturer { get; set; } = string.Empty;
+
+    public string Model { get; set; } = string.Empty;
+
+    public DateTime? PurchaseDate { get; set; }
+
+    public DateTime? WarrantyExpiry { get; set; }
+
+    public string Location { get; set; } = string.Empty;
+
+    public int? EmployeeId { get; set; }
 }

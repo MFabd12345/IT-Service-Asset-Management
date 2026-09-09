@@ -61,6 +61,13 @@ public class AssetService
         asset.Name = updatedAsset.Name;
         asset.Type = updatedAsset.Type;
         asset.Status = updatedAsset.Status;
+        asset.SerialNumber = updatedAsset.SerialNumber;
+        asset.AssetTag = updatedAsset.AssetTag;
+        asset.Manufacturer = updatedAsset.Manufacturer;
+        asset.Model = updatedAsset.Model;
+        asset.PurchaseDate = updatedAsset.PurchaseDate;
+        asset.WarrantyExpiry = updatedAsset.WarrantyExpiry;
+        asset.Location = updatedAsset.Location;
 
         _db.SaveChanges();
 
@@ -84,6 +91,11 @@ public class AssetService
         }
 
         if (asset.EmployeeId != null)
+        {
+            return false;
+        }
+
+        if (asset.Status == AssetStatus.Retired)
         {
             return false;
         }

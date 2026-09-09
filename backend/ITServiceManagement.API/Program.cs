@@ -19,6 +19,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddScoped<AssetService>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<MaintenanceService>();
+builder.Services.AddScoped<TicketService>();
 builder.Services.AddSwaggerGen();
 builder.Services.AddValidation();
 
@@ -61,7 +62,15 @@ app.MapGet("/api/assets", (AssetService assetService) =>
         Id = asset.Id,
         Name = asset.Name,
         Type = asset.Type,
-        Status = asset.Status
+        Status = asset.Status,
+        SerialNumber = asset.SerialNumber,
+        AssetTag = asset.AssetTag,
+        Manufacturer = asset.Manufacturer,
+        Model = asset.Model,
+        PurchaseDate = asset.PurchaseDate,
+        WarrantyExpiry = asset.WarrantyExpiry,
+        Location = asset.Location,
+        EmployeeId = asset.EmployeeId
     });
 
     return Results.Ok(assetDtos);
@@ -83,7 +92,15 @@ app.MapGet("/api/assets/{id}", (int id, AssetService assetService) =>
         Id = asset.Id,
         Name = asset.Name,
         Type = asset.Type,
-        Status = asset.Status
+        Status = asset.Status,
+        SerialNumber = asset.SerialNumber,
+        AssetTag = asset.AssetTag,
+        Manufacturer = asset.Manufacturer,
+        Model = asset.Model,
+        PurchaseDate = asset.PurchaseDate,
+        WarrantyExpiry = asset.WarrantyExpiry,
+        Location = asset.Location,
+        EmployeeId = asset.EmployeeId
     };
 
     return Results.Ok(assetDto);
@@ -91,30 +108,43 @@ app.MapGet("/api/assets/{id}", (int id, AssetService assetService) =>
 
 
 // CREATE ASSET
-app.MapPost("/api/assets", (CreateAssetDto assetDto, AssetService assetService) =>
-{
-    var asset = new Asset
+app.MapPost("/api/assets",
+    (CreateAssetDto assetDto, AssetService assetService) =>
     {
-        Name = assetDto.Name,
-        Type = assetDto.Type,
-        Status = assetDto.Status
-    };
+        var asset = new Asset
+        {
+            Name = assetDto.Name,
+            Type = assetDto.Type,
+            Status = assetDto.Status,
+            SerialNumber = assetDto.SerialNumber,
+            AssetTag = assetDto.AssetTag,
+            Manufacturer = assetDto.Manufacturer,
+            Model = assetDto.Model,
+            PurchaseDate = assetDto.PurchaseDate,
+            WarrantyExpiry = assetDto.WarrantyExpiry,
+            Location = assetDto.Location
+        };
 
-    assetService.AddAsset(asset);
+        assetService.AddAsset(asset);
 
-    var resultDto = new AssetDto
-    {
-        Id = asset.Id,
-        Name = asset.Name,
-        Type = asset.Type,
-        Status = asset.Status
-    };
+        var resultDto = new AssetDto
+        {
+            Id = asset.Id,
+            Name = asset.Name,
+            Type = asset.Type,
+            Status = asset.Status,
+            SerialNumber = asset.SerialNumber,
+            AssetTag = asset.AssetTag,
+            Manufacturer = asset.Manufacturer,
+            Model = asset.Model,
+            PurchaseDate = asset.PurchaseDate,
+            WarrantyExpiry = asset.WarrantyExpiry,
+            Location = asset.Location,
+            EmployeeId = asset.EmployeeId
+        };
 
-    return Results.Created(
-        $"/api/assets/{asset.Id}",
-        resultDto
-    );
-});
+        return Results.Created($"/api/assets/{asset.Id}", resultDto);
+    });
 
 
 // CREATE ASSETS IN BULK
@@ -151,13 +181,17 @@ app.MapPut("/api/assets/{id}",
         {
             Name = assetDto.Name,
             Type = assetDto.Type,
-            Status = assetDto.Status
+            Status = assetDto.Status,
+            SerialNumber = assetDto.SerialNumber,
+            AssetTag = assetDto.AssetTag,
+            Manufacturer = assetDto.Manufacturer,
+            Model = assetDto.Model,
+            PurchaseDate = assetDto.PurchaseDate,
+            WarrantyExpiry = assetDto.WarrantyExpiry,
+            Location = assetDto.Location
         };
 
-        var updated = assetService.UpdateAsset(
-            id,
-            updatedAsset
-        );
+        var updated = assetService.UpdateAsset(id, updatedAsset);
 
         if (!updated)
         {
@@ -420,6 +454,163 @@ app.MapPut("/api/maintenance/{id}/complete",
         }
 
         return Results.Ok("Maintenance completed successfully");
+    });
+
+app.MapGet("/api/tickets", (TicketService ticketService) =>
+{
+    var tickets = ticketService.GetTickets();
+
+    var ticketDtos = tickets.Select(ticket => new TicketDto
+    {
+        Id = ticket.Id,
+        Title = ticket.Title,
+        Description = ticket.Description,
+        Priority = ticket.Priority,
+        Status = ticket.Status,
+        EmployeeId = ticket.EmployeeId,
+        AssetId = ticket.AssetId,
+        CreatedDate = ticket.CreatedDate,
+        ResolvedDate = ticket.ResolvedDate
+    });
+
+    return Results.Ok(ticketDtos);
+});
+
+app.MapGet("/api/tickets/{id}",
+    (int id, TicketService ticketService) =>
+    {
+        var ticket = ticketService.GetTicketById(id);
+
+        if (ticket == null)
+        {
+            return Results.NotFound("Ticket not found");
+        }
+
+        var ticketDto = new TicketDto
+        {
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Priority = ticket.Priority,
+            Status = ticket.Status,
+            EmployeeId = ticket.EmployeeId,
+            AssetId = ticket.AssetId,
+            CreatedDate = ticket.CreatedDate,
+            ResolvedDate = ticket.ResolvedDate
+        };
+
+        return Results.Ok(ticketDto);
+    });
+
+app.MapPost("/api/tickets",
+    (CreateTicketDto ticketDto, TicketService ticketService) =>
+    {
+        var ticket = new Ticket
+        {
+            Title = ticketDto.Title,
+            Description = ticketDto.Description,
+            Priority = ticketDto.Priority,
+            EmployeeId = ticketDto.EmployeeId,
+            AssetId = ticketDto.AssetId,
+            Status = TicketStatus.Open
+        };
+
+        var result = ticketService.AddTicket(ticket);
+
+        if (!result.Success)
+        {
+            return Results.BadRequest(result.Error);
+        }
+
+        var resultDto = new TicketDto
+        {
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Priority = ticket.Priority,
+            Status = ticket.Status,
+            EmployeeId = ticket.EmployeeId,
+            AssetId = ticket.AssetId,
+            CreatedDate = ticket.CreatedDate,
+            ResolvedDate = ticket.ResolvedDate
+        };
+
+        return Results.Created($"/api/tickets/{ticket.Id}", resultDto);
+    });
+
+app.MapPut("/api/tickets/{id}",
+    (int id, UpdateTicketDto ticketDto, TicketService ticketService) =>
+    {
+        var ticket = new Ticket
+        {
+            Title = ticketDto.Title,
+            Description = ticketDto.Description,
+            Priority = ticketDto.Priority
+        };
+
+        var updated = ticketService.UpdateTicket(id, ticket);
+
+        if (!updated)
+        {
+            return Results.NotFound("Ticket not found");
+        }
+
+        return Results.Ok("Ticket updated successfully");
+    });
+
+app.MapDelete("/api/tickets/{id}",
+    (int id, TicketService ticketService) =>
+    {
+        var deleted = ticketService.DeleteTicket(id);
+
+        if (!deleted)
+        {
+            return Results.NotFound("Ticket not found");
+        }
+
+        return Results.Ok("Ticket deleted successfully");
+    });
+
+app.MapPut("/api/tickets/{id}/start",
+    (int id, TicketService ticketService) =>
+    {
+        var started = ticketService.StartTicket(id);
+
+        if (!started)
+        {
+            return Results.BadRequest(
+                "Ticket not found or ticket is not currently open");
+        }
+
+        return Results.Ok("Ticket started successfully");
+    });
+
+app.MapPut("/api/tickets/{id}/resolve",
+    (int id, TicketService ticketService) =>
+    {
+        var resolved = ticketService.ResolveTicket(id);
+
+        if (!resolved)
+        {
+            return Results.BadRequest(
+                "Ticket not found or ticket is not currently in progress");
+        }
+
+        return Results.Ok("Ticket resolved successfully");
+    });
+
+app.MapPut("/api/tickets/{id}/close",
+    (int id, TicketService ticketService) =>
+    {
+        var closed = ticketService.CloseTicket(id);
+
+        if (!closed)
+        {
+            return Results.BadRequest(
+                "Ticket not found or ticket is not currently resolved");
+        }
+
+        return Results.Ok("Ticket closed successfully");
     });
 
 app.Run();
