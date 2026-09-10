@@ -31,7 +31,20 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         )
     ));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
+
+app.UseCors("FrontendPolicy");
 
 if (app.Environment.IsDevelopment())
 {
