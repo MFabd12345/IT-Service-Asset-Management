@@ -39,7 +39,7 @@ function Assets() {
 
   return (
     <div>
-      <h1>Assets</h1>
+      <h2>Assets</h2>
       <p>Manage and monitor IT assets.</p>
 
       <table>

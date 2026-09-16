@@ -51,7 +51,7 @@ function Dashboard() {
 
   return (
     <div>
-      <h1>Dashboard</h1>
+      <h2>Dashboard</h2>
       <p>IT Service Management Overview</p>
 
       <div className="stats-grid">

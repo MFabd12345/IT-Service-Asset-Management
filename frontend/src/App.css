@@ -2,26 +2,41 @@
   box-sizing: border-box;
 }
 
-body {
+html,
+body,
+#root {
   margin: 0;
+  width: 100%;
+  height: 100%;
+}
+
+body {
   font-family: Arial, Helvetica, sans-serif;
   background: #f5f7fa;
   color: #1f2937;
+  overflow: hidden;
 }
 
+/* APP */
+
 .app {
-  display: flex;
-  min-height: 100vh;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* SIDEBAR */
 
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 240px;
-  min-height: 100vh;
+  height: 100vh;
   background: #111827;
   padding: 25px 15px;
-  flex-shrink: 0;
+  overflow-y: auto;
+  z-index: 1000;
 }
 
 .logo {
@@ -66,20 +81,60 @@ body {
   font-weight: bold;
 }
 
-/* MAIN */
+/* MAIN CONTENT */
 
 .main-content {
-  flex: 1;
-  padding: 35px;
-  overflow-x: auto;
+  margin-left: 240px;
+  width: calc(100% - 240px);
+  height: 100vh;
+  background: #f5f7fa;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-.main-content h1 {
+/* HEADER */
+
+.page-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 240px;
+
+  height: 70px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 35px;
+
+  background: #f5f7fa;
+  border-bottom: 1px solid #e5e7eb;
+
+  z-index: 900;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 24px;
+}
+
+/* PAGE CONTENT */
+
+.page-content {
+  padding: 100px 35px 50px;
+}
+
+.page-content h1 {
   margin: 0;
   font-size: 30px;
 }
 
-.main-content > div > p {
+.page-content h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.page-content p {
   color: #6b7280;
   margin-top: 7px;
 }
@@ -126,6 +181,9 @@ table {
 }
 
 th {
+  position: sticky;
+  top: 70px;
+  z-index: 800;
   background: #f9fafb;
   font-weight: bold;
 }
@@ -179,7 +237,7 @@ tbody tr:hover {
   font-weight: bold;
 }
 
-/* Priority */
+/* PRIORITY */
 
 .priority-low {
   background: #dcfce7;
@@ -201,7 +259,7 @@ tbody tr:hover {
   color: #991b1b;
 }
 
-/* Status */
+/* STATUS */
 
 .status-open {
   background: #dbeafe;
@@ -223,7 +281,7 @@ tbody tr:hover {
   color: #374151;
 }
 
-/* EMPTY */
+/* EMPTY STATE */
 
 .empty-state {
   margin-top: 25px;
@@ -242,23 +300,54 @@ tbody tr:hover {
     width: 190px;
   }
 
+  .main-content {
+    margin-left: 190px;
+    width: calc(100% - 190px);
+  }
+
+  .page-header {
+    left: 190px;
+    padding: 0 25px;
+  }
+
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .main-content {
-    padding: 25px;
+  .page-content {
+    padding: 100px 25px 50px;
   }
 }
 
 @media (max-width: 600px) {
+  body {
+    overflow: auto;
+  }
+
   .app {
-    flex-direction: column;
+    height: auto;
+    overflow: visible;
   }
 
   .sidebar {
+    position: relative;
     width: 100%;
+    height: auto;
     min-height: auto;
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .page-header {
+    position: sticky;
+    top: 0;
+    left: 0;
+    right: 0;
   }
 
   .sidebar nav {
@@ -268,5 +357,9 @@ tbody tr:hover {
 
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .page-content {
+    padding: 30px 20px 50px;
   }
 }
