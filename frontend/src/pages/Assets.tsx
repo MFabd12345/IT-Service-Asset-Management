@@ -42,39 +42,41 @@ function Assets() {
       <h2>Assets</h2>
       <p>Manage and monitor IT assets.</p>
 
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Serial Number</th>
-            <th>Asset Tag</th>
-            <th>Manufacturer</th>
-            <th>Model</th>
-            <th>Location</th>
-            <th>Employee</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {assets.map((asset) => (
-            <tr key={asset.id}>
-              <td>{asset.id}</td>
-              <td>{asset.name}</td>
-              <td>{asset.type}</td>
-              <td>{asset.status}</td>
-              <td>{asset.serialNumber}</td>
-              <td>{asset.assetTag}</td>
-              <td>{asset.manufacturer}</td>
-              <td>{asset.model}</td>
-              <td>{asset.location}</td>
-              <td>{asset.employeeId ?? "Unassigned"}</td>
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Status</th>
+              <th>Serial Number</th>
+              <th>Asset Tag</th>
+              <th>Manufacturer</th>
+              <th>Model</th>
+              <th>Location</th>
+              <th>Employee</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {assets.map((asset) => (
+              <tr key={asset.id}>
+                <td>{asset.id}</td>
+                <td>{asset.name}</td>
+                <td>{asset.type}</td>
+                <td>{asset.status}</td>
+                <td>{asset.serialNumber}</td>
+                <td>{asset.assetTag}</td>
+                <td>{asset.manufacturer}</td>
+                <td>{asset.model}</td>
+                <td>{asset.location}</td>
+                <td>{asset.employeeId ?? "Unassigned"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

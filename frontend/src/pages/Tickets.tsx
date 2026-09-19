@@ -76,7 +76,7 @@ function Tickets() {
 
   return (
     <div>
-      <h1>Tickets</h1>
+      <h2>Tickets</h2>
       <p>Manage IT incidents and service requests.</p>
 
       {loading ? (
@@ -86,91 +86,93 @@ function Tickets() {
           No tickets found.
         </div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Title</th>
-              <th>Priority</th>
-              <th>Status</th>
-              <th>Employee</th>
-              <th>Asset</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {tickets.map((ticket) => (
-              <tr key={ticket.id}>
-                <td>{ticket.id}</td>
-
-                <td>
-                  <strong>{ticket.title}</strong>
-                </td>
-
-                <td>
-                  <span className={priorityClass(ticket.priority)}>
-                    {ticket.priority}
-                  </span>
-                </td>
-
-                <td>
-                  <span className={statusClass(ticket.status)}>
-                    {ticket.status}
-                  </span>
-                </td>
-
-                <td>{ticket.employeeId}</td>
-
-                <td>
-                  {ticket.assetId ?? "None"}
-                </td>
-
-                <td>
-                  {formatDate(ticket.createdDate)}
-                </td>
-
-                <td>
-                  <div className="action-buttons">
-                    {ticket.status === "Open" && (
-                      <button
-                        className="btn"
-                        onClick={() => startTicket(ticket.id)}
-                      >
-                        Start
-                      </button>
-                    )}
-
-                    {ticket.status === "InProgress" && (
-                      <button
-                        className="btn"
-                        onClick={() => resolveTicket(ticket.id)}
-                      >
-                        Resolve
-                      </button>
-                    )}
-
-                    {ticket.status === "Resolved" && (
-                      <button
-                        className="btn"
-                        onClick={() => closeTicket(ticket.id)}
-                      >
-                        Close
-                      </button>
-                    )}
-
-                    {ticket.status === "Closed" && (
-                      <span className="completed">
-                        Completed
-                      </span>
-                    )}
-                  </div>
-                </td>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Employee</th>
+                <th>Asset</th>
+                <th>Created</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {tickets.map((ticket) => (
+                <tr key={ticket.id}>
+                  <td>{ticket.id}</td>
+
+                  <td>
+                    <strong>{ticket.title}</strong>
+                  </td>
+
+                  <td>
+                    <span className={priorityClass(ticket.priority)}>
+                      {ticket.priority}
+                    </span>
+                  </td>
+
+                  <td>
+                    <span className={statusClass(ticket.status)}>
+                      {ticket.status}
+                    </span>
+                  </td>
+
+                  <td>{ticket.employeeId}</td>
+
+                  <td>
+                    {ticket.assetId ?? "None"}
+                  </td>
+
+                  <td>
+                    {formatDate(ticket.createdDate)}
+                  </td>
+
+                  <td>
+                    <div className="action-buttons">
+                      {ticket.status === "Open" && (
+                        <button
+                          className="btn"
+                          onClick={() => startTicket(ticket.id)}
+                        >
+                          Start
+                        </button>
+                      )}
+
+                      {ticket.status === "InProgress" && (
+                        <button
+                          className="btn"
+                          onClick={() => resolveTicket(ticket.id)}
+                        >
+                          Resolve
+                        </button>
+                      )}
+
+                      {ticket.status === "Resolved" && (
+                        <button
+                          className="btn"
+                          onClick={() => closeTicket(ticket.id)}
+                        >
+                          Close
+                        </button>
+                      )}
+
+                      {ticket.status === "Closed" && (
+                        <span className="completed">
+                          Completed
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

@@ -37,6 +37,8 @@ function Employees() {
       {loading ? (
         <h3>Loading employees...</h3>
       ) : (
+
+        <div className="table-container">
         <table>
           <thead>
             <tr>
@@ -62,6 +64,7 @@ function Employees() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   );

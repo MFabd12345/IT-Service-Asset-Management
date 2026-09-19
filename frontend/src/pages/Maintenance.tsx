@@ -38,7 +38,7 @@ function Maintenance() {
 
   return (
     <div>
-      <h1>Maintenance</h1>
+      <h2>Maintenance</h2>
       <p>Monitor IT asset maintenance records.</p>
 
       {loading ? (
@@ -48,37 +48,39 @@ function Maintenance() {
           No maintenance records found.
         </div>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Asset ID</th>
-              <th>Issue</th>
-              <th>Resolution</th>
-              <th>Reported Date</th>
-              <th>Completed Date</th>
-              <th>Cost</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {records.map((record) => (
-              <tr key={record.id}>
-                <td>{record.id}</td>
-                <td>{record.assetId}</td>
-                <td>{record.issue}</td>
-                <td>{record.resolution ?? "Pending"}</td>
-                <td>{formatDate(record.reportedDate)}</td>
-                <td>{formatDate(record.completedDate)}</td>
-                <td>
-                  {record.cost !== null
-                    ? `₹${record.cost}`
-                    : "-"}
-                </td>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Asset ID</th>
+                <th>Issue</th>
+                <th>Resolution</th>
+                <th>Reported Date</th>
+                <th>Completed Date</th>
+                <th>Cost</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {records.map((record) => (
+                <tr key={record.id}>
+                  <td>{record.id}</td>
+                  <td>{record.assetId}</td>
+                  <td>{record.issue}</td>
+                  <td>{record.resolution ?? "Pending"}</td>
+                  <td>{formatDate(record.reportedDate)}</td>
+                  <td>{formatDate(record.completedDate)}</td>
+                  <td>
+                    {record.cost !== null
+                      ? `₹${record.cost}`
+                      : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );
