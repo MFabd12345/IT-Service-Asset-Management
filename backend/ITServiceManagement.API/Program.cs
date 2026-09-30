@@ -4,8 +4,30 @@ using ITServiceManagement.API.Services;
 using Microsoft.EntityFrameworkCore;
 using ITServiceManagement.API.DTOs;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"]!
+                )
+            )
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
@@ -17,6 +39,7 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 // Add services to the container.
 builder.Services.AddOpenApi();
 builder.Services.AddScoped<AssetService>();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<MaintenanceService>();
 builder.Services.AddScoped<TicketService>();
@@ -86,8 +109,8 @@ app.MapGet("/api/assets", (AssetService assetService) =>
         EmployeeId = asset.EmployeeId
     });
 
-    return Results.Ok(assetDtos);
-});
+        return Results.Ok(assetDtos);
+}).RequireAuthorization();
 
 
 // GET ASSET BY ID
@@ -623,7 +646,96 @@ app.MapPut("/api/tickets/{id}/close",
                 "Ticket not found or ticket is not currently resolved");
         }
 
-        return Results.Ok("Ticket closed successfully");
+                return Results.Ok("Ticket closed successfully");
+    });
+
+		app.UseAuthentication();
+		app.UseAuthorization();
+
+
+// ==================== AUTHENTICATION ====================
+
+app.MapPost("/api/auth/login",
+    (LoginDto loginDto, AuthService authService) =>
+    {
+        var user = authService.ValidateUser(
+            loginDto.Email,
+            loginDto.Password
+        );
+
+        if (user == null)
+        {
+            return Results.Unauthorized();
+        }
+
+        var key = builder.Configuration["Jwt:Key"]!;
+
+        var tokenHandler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+
+        var tokenDescriptor =
+            new Microsoft.IdentityModel.Tokens.SecurityTokenDescriptor
+            {
+                Subject = new System.Security.Claims.ClaimsIdentity(
+                    new[]
+                    {
+                        new System.Security.Claims.Claim(
+                            System.Security.Claims.ClaimTypes.Name,
+                            user.Username
+                        ),
+                        new System.Security.Claims.Claim(
+                            System.Security.Claims.ClaimTypes.Email,
+                            user.Email
+                        ),
+                        new System.Security.Claims.Claim(
+                            System.Security.Claims.ClaimTypes.Role,
+                            user.Role
+                        )
+                    }),
+
+                Expires = DateTime.UtcNow.AddHours(8),
+
+                Issuer = builder.Configuration["Jwt:Issuer"],
+
+                Audience = builder.Configuration["Jwt:Audience"],
+
+                SigningCredentials =
+                    new Microsoft.IdentityModel.Tokens.SigningCredentials(
+                        new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                            System.Text.Encoding.UTF8.GetBytes(key)
+                        ),
+                        Microsoft.IdentityModel.Tokens.SecurityAlgorithms.HmacSha256Signature
+                    )
+            };
+
+        var token = tokenHandler.CreateToken(tokenDescriptor);
+
+        return Results.Ok(new
+        {
+            token = tokenHandler.WriteToken(token),
+            username = user.Username,
+            email = user.Email,
+            role = user.Role
+        });
+    });
+
+
+app.MapPost("/api/auth/register",
+    (RegisterDto registerDto, AuthService authService) =>
+    {
+        var createdUser = authService.CreateUser(
+            registerDto.Username,
+            registerDto.Email,
+            registerDto.Password,
+            registerDto.Role
+        );
+
+        return Results.Ok(new
+        {
+            id = createdUser.Id,
+            username = createdUser.Username,
+            email = createdUser.Email,
+            role = createdUser.Role
+        });
     });
 
 app.Run();
