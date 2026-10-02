@@ -50,11 +50,13 @@ function Dashboard() {
     tickets.filter((ticket) => ticket.status === status).length;
 
   return (
-    <div>
+  <div>
+    <div className="dashboard-heading">
       <h2>Dashboard</h2>
       <p>IT Service Management Overview</p>
+    </div>
 
-      <div className="stats-grid">
+    <div className="stats-grid">
         <StatCard title="Total Assets" value={assets.length} />
         <StatCard title="Available Assets" value={countAssets("Available")} />
         <StatCard title="Assigned Assets" value={countAssets("Assigned")} />

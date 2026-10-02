@@ -1,6 +1,20 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Sidebar() {
+  const navigate = useNavigate();
+
+  const username = localStorage.getItem("username") || "Admin";
+  const role = localStorage.getItem("role") || "Admin";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
+    localStorage.removeItem("email");
+    localStorage.removeItem("role");
+
+    navigate("/login", { replace: true });
+  };
+
   return (
     <aside className="sidebar">
       <div className="logo">
@@ -8,8 +22,13 @@ function Sidebar() {
         <span>IT Service Management</span>
       </div>
 
+      <div className="user-info">
+        <strong>{username}</strong>
+        <span>{role}</span>
+      </div>
+
       <nav>
-        <NavLink to="/">
+        <NavLink to="/" end>
           Dashboard
         </NavLink>
 
@@ -29,6 +48,10 @@ function Sidebar() {
           Tickets
         </NavLink>
       </nav>
+
+      <button className="logout-button" onClick={handleLogout}>
+        Logout
+      </button>
     </aside>
   );
 }

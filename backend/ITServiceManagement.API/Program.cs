@@ -80,6 +80,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapGet("/", () =>
 {
     return "IT Service Asset Management API is running!";
@@ -649,8 +652,7 @@ app.MapPut("/api/tickets/{id}/close",
                 return Results.Ok("Ticket closed successfully");
     });
 
-		app.UseAuthentication();
-		app.UseAuthorization();
+		
 
 
 // ==================== AUTHENTICATION ====================

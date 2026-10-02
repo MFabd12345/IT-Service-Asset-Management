@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
+import ProtectedRoute from "./components/ProtectedRoute";
 
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Assets from "./pages/Assets";
 import Employees from "./pages/Employees";
@@ -10,28 +12,47 @@ import Tickets from "./pages/Tickets";
 
 import "./App.css";
 
+function AppLayout() {
+  return (
+    <div className="app">
+      <Sidebar />
+
+      <main className="main-content">
+        <header className="page-header">
+          <h1>IT Service Management</h1>
+        </header>
+
+        <div className="page-content">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/assets" element={<Assets />} />
+            <Route path="/employees" element={<Employees />} />
+            <Route path="/maintenance" element={<Maintenance />} />
+            <Route path="/tickets" element={<Tickets />} />
+          </Routes>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <div className="app">
-        <Sidebar />
+      <Routes>
+        <Route path="/login" element={<Login />} />
 
-        <main className="main-content">
-          <header className="page-header">
-            <h1>IT Service Management</h1>
-          </header>
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <AppLayout />
+            </ProtectedRoute>
+          }
+        />
 
-          <div className="page-content">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/assets" element={<Assets />} />
-              <Route path="/employees" element={<Employees />} />
-              <Route path="/maintenance" element={<Maintenance />} />
-              <Route path="/tickets" element={<Tickets />} />
-            </Routes>
-          </div>
-        </main>
-      </div>
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
     </BrowserRouter>
   );
 }
