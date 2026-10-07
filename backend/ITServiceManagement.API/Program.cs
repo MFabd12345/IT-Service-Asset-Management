@@ -26,7 +26,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy =
+        new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+            .RequireAuthenticatedUser()
+            .Build();
+});
 
 
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -86,7 +92,7 @@ app.UseAuthorization();
 app.MapGet("/", () =>
 {
     return "IT Service Asset Management API is running!";
-});
+}).AllowAnonymous();
 
 
 // ==================== ASSETS ====================
@@ -718,18 +724,17 @@ app.MapPost("/api/auth/login",
             email = user.Email,
             role = user.Role
         });
-    });
+    }).AllowAnonymous();
 
 
 app.MapPost("/api/auth/register",
     (RegisterDto registerDto, AuthService authService) =>
     {
         var createdUser = authService.CreateUser(
-            registerDto.Username,
-            registerDto.Email,
-            registerDto.Password,
-            registerDto.Role
-        );
+    registerDto.Username,
+    registerDto.Email,
+    registerDto.Password
+);
 
         return Results.Ok(new
         {
@@ -738,6 +743,6 @@ app.MapPost("/api/auth/register",
             email = createdUser.Email,
             role = createdUser.Role
         });
-    });
+    }).AllowAnonymous();
 
 app.Run();
