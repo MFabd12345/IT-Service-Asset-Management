@@ -1,3 +1,4 @@
+
 namespace ITServiceManagement.API.Models;
 
 public class User
@@ -11,4 +12,9 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
 
     public string Role { get; set; } = "User";
+
+    // Links an employee login to an employee record.
+    public int? EmployeeId { get; set; }
+
+    public Employee? Employee { get; set; }
 }

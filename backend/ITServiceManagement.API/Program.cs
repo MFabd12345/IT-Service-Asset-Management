@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -26,13 +27,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy =
         new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
             .RequireAuthenticatedUser()
             .Build();
+
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin"));
 });
+
 
 
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -49,7 +55,29 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<EmployeeService>();
 builder.Services.AddScoped<MaintenanceService>();
 builder.Services.AddScoped<TicketService>();
-builder.Services.AddSwaggerGen();
+
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer",
+        new OpenApiSecurityScheme
+        {
+            Name = "Authorization",
+            Type = SecuritySchemeType.Http,
+            Scheme = "bearer",
+            BearerFormat = "JWT",
+            In = ParameterLocation.Header,
+            Description = "Enter your JWT token."
+        });
+
+    options.AddSecurityRequirement(document =>
+        new OpenApiSecurityRequirement
+        {
+            [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+        });
+});
+
+
 builder.Services.AddValidation();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -149,7 +177,7 @@ app.MapGet("/api/assets/{id}", (int id, AssetService assetService) =>
     };
 
     return Results.Ok(assetDto);
-});
+}).RequireAuthorization("AdminOnly");
 
 
 // CREATE ASSET
@@ -189,7 +217,7 @@ app.MapPost("/api/assets",
         };
 
         return Results.Created($"/api/assets/{asset.Id}", resultDto);
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // CREATE ASSETS IN BULK
@@ -201,7 +229,7 @@ app.MapPost("/api/assets/bulk",
         return Results.Ok(
             $"{assets.Count} assets added successfully"
         );
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // DELETE ASSET
@@ -215,7 +243,7 @@ app.MapDelete("/api/assets/{id}", (int id, AssetService assetService) =>
     }
 
     return Results.Ok("Asset deleted successfully");
-});
+}).RequireAuthorization("AdminOnly");
 
 
 // UPDATE ASSET
@@ -244,7 +272,7 @@ app.MapPut("/api/assets/{id}",
         }
 
         return Results.Ok("Asset updated successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // ==================== EMPLOYEES ====================
@@ -265,7 +293,7 @@ app.MapGet("/api/employees", (EmployeeService employeeService) =>
     });
 
     return Results.Ok(employeeDtos);
-});
+}).RequireAuthorization("AdminOnly");
 
 
 // GET EMPLOYEE BY ID
@@ -321,7 +349,7 @@ app.MapPost("/api/employees",
             $"/api/employees/{employee.Id}",
             resultDto
         );
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // CREATE EMPLOYEES IN BULK
@@ -333,7 +361,7 @@ app.MapPost("/api/employees/bulk",
         return Results.Ok(
             $"{employees.Count} employees added successfully"
         );
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // UPDATE EMPLOYEE
@@ -362,7 +390,7 @@ app.MapPut("/api/employees/{id}",
         }
 
         return Results.Ok("Employee updated successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // DELETE EMPLOYEE
@@ -382,7 +410,7 @@ app.MapDelete("/api/employees/{id}",
         }
 
         return Results.Ok("Employee deleted successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // ==================== ASSET ASSIGNMENT ====================
@@ -406,7 +434,7 @@ app.MapPut("/api/assets/{assetId}/assign/{employeeId}",
         }
 
         return Results.Ok("Asset assigned successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // RETURN ASSET
@@ -423,7 +451,7 @@ app.MapPut("/api/assets/{assetId}/return",
         }
 
         return Results.Ok("Asset returned successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // GET ALL ASSETS OF AN EMPLOYEE
@@ -435,7 +463,7 @@ app.MapGet("/api/employees/{employeeId}/assets",
         );
 
         return Results.Ok(assets);
-    });
+    }).RequireAuthorization("AdminOnly");
 
 
 // GET EMPLOYEE ASSIGNED TO AN ASSET
@@ -460,7 +488,7 @@ app.MapGet("/api/maintenance",
     (MaintenanceService service) =>
     {
         return Results.Ok(service.GetAll());
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/maintenance/{id}",
     (int id, MaintenanceService service) =>
@@ -473,7 +501,7 @@ app.MapGet("/api/maintenance/{id}",
         }
 
         return Results.Ok(record);
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPost("/api/assets/{assetId}/maintenance",
     (int assetId, MaintenanceRecord record, MaintenanceService service) =>
@@ -486,7 +514,7 @@ app.MapPost("/api/assets/{assetId}/maintenance",
         }
 
         return Results.Ok("Maintenance record created successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPut("/api/maintenance/{id}/complete",
     (int id, string resolution, decimal? cost, MaintenanceService service) =>
@@ -499,7 +527,7 @@ app.MapPut("/api/maintenance/{id}/complete",
         }
 
         return Results.Ok("Maintenance completed successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/tickets", (TicketService ticketService) =>
 {
@@ -519,7 +547,7 @@ app.MapGet("/api/tickets", (TicketService ticketService) =>
     });
 
     return Results.Ok(ticketDtos);
-});
+}).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/tickets/{id}",
     (int id, TicketService ticketService) =>
@@ -545,7 +573,7 @@ app.MapGet("/api/tickets/{id}",
         };
 
         return Results.Ok(ticketDto);
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPost("/api/tickets",
     (CreateTicketDto ticketDto, TicketService ticketService) =>
@@ -581,7 +609,7 @@ app.MapPost("/api/tickets",
         };
 
         return Results.Created($"/api/tickets/{ticket.Id}", resultDto);
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPut("/api/tickets/{id}",
     (int id, UpdateTicketDto ticketDto, TicketService ticketService) =>
@@ -601,7 +629,7 @@ app.MapPut("/api/tickets/{id}",
         }
 
         return Results.Ok("Ticket updated successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapDelete("/api/tickets/{id}",
     (int id, TicketService ticketService) =>
@@ -614,7 +642,7 @@ app.MapDelete("/api/tickets/{id}",
         }
 
         return Results.Ok("Ticket deleted successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPut("/api/tickets/{id}/start",
     (int id, TicketService ticketService) =>
@@ -628,7 +656,7 @@ app.MapPut("/api/tickets/{id}/start",
         }
 
         return Results.Ok("Ticket started successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPut("/api/tickets/{id}/resolve",
     (int id, TicketService ticketService) =>
@@ -642,7 +670,7 @@ app.MapPut("/api/tickets/{id}/resolve",
         }
 
         return Results.Ok("Ticket resolved successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
 app.MapPut("/api/tickets/{id}/close",
     (int id, TicketService ticketService) =>
@@ -656,9 +684,9 @@ app.MapPut("/api/tickets/{id}/close",
         }
 
                 return Results.Ok("Ticket closed successfully");
-    });
+    }).RequireAuthorization("AdminOnly");
 
-		
+
 
 
 // ==================== AUTHENTICATION ====================
@@ -727,22 +755,51 @@ app.MapPost("/api/auth/login",
     }).AllowAnonymous();
 
 
-app.MapPost("/api/auth/register",
-    (RegisterDto registerDto, AuthService authService) =>
+app.MapPost("/api/auth/create-employee-account",
+    (CreateEmployeeAccountDto dto, AuthService authService) =>
     {
-        var createdUser = authService.CreateUser(
-    registerDto.Username,
-    registerDto.Email,
-    registerDto.Password
-);
-
-        return Results.Ok(new
+        try
         {
-            id = createdUser.Id,
-            username = createdUser.Username,
-            email = createdUser.Email,
-            role = createdUser.Role
-        });
-    }).AllowAnonymous();
+            var user = authService.CreateEmployeeUser(
+                dto.Username,
+                dto.Email,
+                dto.Password,
+                dto.EmployeeId
+            );
+
+            return Results.Ok(new
+            {
+                id = user.Id,
+                username = user.Username,
+                email = user.Email,
+                role = user.Role,
+                employeeId = user.EmployeeId
+            });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.NotFound(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.Conflict(new { message = ex.Message });
+        }
+    })
+    .RequireAuthorization("AdminOnly");
+
+
+app.MapGet("/api/auth/me", (System.Security.Claims.ClaimsPrincipal user) =>
+{
+    return Results.Ok(new
+    {
+        IsAuthenticated = user.Identity?.IsAuthenticated,
+        Username = user.Identity?.Name,
+        Email = user.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                ?? user.FindFirst("email")?.Value,
+        Role = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+               ?? user.FindFirst("role")?.Value
+    });
+}).RequireAuthorization();
+
 
 app.Run();

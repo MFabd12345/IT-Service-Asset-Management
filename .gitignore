@@ -7,3 +7,5 @@ obj
 backend/ITServiceManagement.API/appsettings.json
 backend/ITServiceManagement.API/appsettings.*.json
 !backend/ITServiceManagement.API/appsettings.example.json
+# Temporary local admin password reset utility
+/backend/LocalAdminPasswordReset/

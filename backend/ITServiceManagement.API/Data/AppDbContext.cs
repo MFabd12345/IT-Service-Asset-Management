@@ -45,5 +45,18 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(t => t.AssetId)
             .OnDelete(DeleteBehavior.SetNull);
+
+
+        modelBuilder.Entity<User>()
+            .HasOne(u => u.Employee)
+            .WithMany()
+            .HasForeignKey(u => u.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.EmployeeId)
+            .IsUnique();
+
+
     }
 }

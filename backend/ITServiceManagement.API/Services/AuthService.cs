@@ -1,3 +1,4 @@
+
 using ITServiceManagement.API.Data;
 using ITServiceManagement.API.Models;
 using Microsoft.AspNetCore.Identity;
@@ -16,17 +17,48 @@ public class AuthService
         _passwordHasher = new PasswordHasher<User>();
     }
 
-    public User CreateUser(
+    public User CreateEmployeeUser(
         string username,
         string email,
         string password,
-        string role = "User")
+        int employeeId)
     {
+        if (_context.Users.Any(u => u.Email == email))
+        {
+            throw new InvalidOperationException(
+                "An account with this email already exists.");
+        }
+
+        var employee = _context.Employees
+            .FirstOrDefault(e => e.Id == employeeId);
+
+        if (employee == null)
+        {
+            throw new KeyNotFoundException(
+                "Employee not found.");
+        }
+
+        if (_context.Users.Any(u => u.EmployeeId == employeeId))
+        {
+            throw new InvalidOperationException(
+                "This employee already has a login account.");
+        }
+
+        if (!string.Equals(
+                employee.Email,
+                email,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "The email must match the employee record.");
+        }
+
         var user = new User
         {
             Username = username,
             Email = email,
-            Role = role
+            Role = "User",
+            EmployeeId = employee.Id
         };
 
         user.PasswordHash =
