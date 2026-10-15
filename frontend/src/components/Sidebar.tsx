@@ -1,10 +1,12 @@
+
 import { NavLink, useNavigate } from "react-router-dom";
 
 function Sidebar() {
   const navigate = useNavigate();
 
-  const username = localStorage.getItem("username") || "Admin";
-  const role = localStorage.getItem("role") || "Admin";
+  const username = localStorage.getItem("username") || "User";
+  const role = localStorage.getItem("role") || "User";
+  const isAdmin = role.toLowerCase() === "admin";
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -32,21 +34,15 @@ function Sidebar() {
           Dashboard
         </NavLink>
 
-        <NavLink to="/assets">
-          Assets
-        </NavLink>
+        {isAdmin && (
+          <>
+            <NavLink to="/assets">Assets</NavLink>
+            <NavLink to="/employees">Employees</NavLink>
+            <NavLink to="/maintenance">Maintenance</NavLink>
+          </>
+        )}
 
-        <NavLink to="/employees">
-          Employees
-        </NavLink>
-
-        <NavLink to="/maintenance">
-          Maintenance
-        </NavLink>
-
-        <NavLink to="/tickets">
-          Tickets
-        </NavLink>
+        <NavLink to="/tickets">Tickets</NavLink>
       </nav>
 
       <button className="logout-button" onClick={handleLogout}>

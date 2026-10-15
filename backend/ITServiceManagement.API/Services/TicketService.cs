@@ -29,6 +29,17 @@ public class TicketService
             .FirstOrDefault(t => t.Id == id);
     }
 
+
+    public List<Ticket> GetTicketsByEmployeeId(int employeeId)
+    {
+        return _db.Tickets
+            .Include(t => t.Employee)
+            .Include(t => t.Asset)
+            .Where(t => t.EmployeeId == employeeId)
+            .ToList();
+    }
+
+
     public (bool Success, string? Error, Ticket? Ticket) AddTicket(
         Ticket ticket)
     {

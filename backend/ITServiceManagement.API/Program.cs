@@ -296,28 +296,60 @@ app.MapGet("/api/employees", (EmployeeService employeeService) =>
 }).RequireAuthorization("AdminOnly");
 
 
+
 // GET EMPLOYEE BY ID
-app.MapGet("/api/employees/{id}", (int id, EmployeeService employeeService) =>
-{
-    var employee = employeeService.GetEmployeeById(id);
-
-    if (employee == null)
+app.MapGet("/api/employees/{id}",
+    async (
+        int id,
+        System.Security.Claims.ClaimsPrincipal principal,
+        AppDbContext db,
+        EmployeeService employeeService) =>
     {
-        return Results.NotFound("Employee not found");
-    }
+        // Admin can view any employee.
+        if (!principal.IsInRole("Admin"))
+        {
+            // Identify the logged-in account from its JWT email claim.
+            var email = principal.FindFirst(
+                System.Security.Claims.ClaimTypes.Email)?.Value;
 
-    var employeeDto = new EmployeeDto
-    {
-        Id = employee.Id,
-        EmployeeId = employee.EmployeeId,
-        Name = employee.Name,
-        Email = employee.Email,
-        Department = employee.Department,
-        Designation = employee.Designation
-    };
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Results.Unauthorized();
+            }
 
-    return Results.Ok(employeeDto);
-});
+            // Find the account in the database.
+            var account = await db.Users
+                .AsNoTracking()
+                .SingleOrDefaultAsync(u => u.Email == email);
+
+            // Deny access if the account is not linked
+            // to the requested employee.
+            if (account?.EmployeeId != id)
+            {
+                return Results.Forbid();
+            }
+        }
+
+        var employee = employeeService.GetEmployeeById(id);
+
+        if (employee == null)
+        {
+            return Results.NotFound("Employee not found");
+        }
+
+        var employeeDto = new EmployeeDto
+        {
+            Id = employee.Id,
+            EmployeeId = employee.EmployeeId,
+            Name = employee.Name,
+            Email = employee.Email,
+            Department = employee.Department,
+            Designation = employee.Designation
+        };
+
+        return Results.Ok(employeeDto);
+    });
+
 
 
 // CREATE EMPLOYEE
@@ -529,25 +561,58 @@ app.MapPut("/api/maintenance/{id}/complete",
         return Results.Ok("Maintenance completed successfully");
     }).RequireAuthorization("AdminOnly");
 
-app.MapGet("/api/tickets", (TicketService ticketService) =>
-{
-    var tickets = ticketService.GetTickets();
 
-    var ticketDtos = tickets.Select(ticket => new TicketDto
+app.MapGet("/api/tickets",
+    async (
+        System.Security.Claims.ClaimsPrincipal principal,
+        AppDbContext db,
+        TicketService ticketService) =>
     {
-        Id = ticket.Id,
-        Title = ticket.Title,
-        Description = ticket.Description,
-        Priority = ticket.Priority,
-        Status = ticket.Status,
-        EmployeeId = ticket.EmployeeId,
-        AssetId = ticket.AssetId,
-        CreatedDate = ticket.CreatedDate,
-        ResolvedDate = ticket.ResolvedDate
+        List<Ticket> tickets;
+
+        if (principal.IsInRole("Admin"))
+        {
+            tickets = ticketService.GetTickets();
+        }
+        else
+        {
+            var email = principal.FindFirst(
+                System.Security.Claims.ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return Results.Unauthorized();
+            }
+
+            var account = await db.Users
+                .AsNoTracking()
+                .SingleOrDefaultAsync(u => u.Email == email);
+
+            if (account?.EmployeeId == null)
+            {
+                return Results.Forbid();
+            }
+
+            tickets = ticketService.GetTicketsByEmployeeId(
+                account.EmployeeId.Value);
+        }
+
+        var ticketDtos = tickets.Select(ticket => new TicketDto
+        {
+            Id = ticket.Id,
+            Title = ticket.Title,
+            Description = ticket.Description,
+            Priority = ticket.Priority,
+            Status = ticket.Status,
+            EmployeeId = ticket.EmployeeId,
+            AssetId = ticket.AssetId,
+            CreatedDate = ticket.CreatedDate,
+            ResolvedDate = ticket.ResolvedDate
+        });
+
+        return Results.Ok(ticketDtos);
     });
 
-    return Results.Ok(ticketDtos);
-}).RequireAuthorization("AdminOnly");
 
 app.MapGet("/api/tickets/{id}",
     (int id, TicketService ticketService) =>
@@ -683,7 +748,7 @@ app.MapPut("/api/tickets/{id}/close",
                 "Ticket not found or ticket is not currently resolved");
         }
 
-                return Results.Ok("Ticket closed successfully");
+        return Results.Ok("Ticket closed successfully");
     }).RequireAuthorization("AdminOnly");
 
 
